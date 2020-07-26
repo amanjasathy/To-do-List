@@ -3,6 +3,8 @@ package com.example.todolist;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.widget.Toast;
@@ -18,6 +20,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        RecyclerView recyclerView=findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setHasFixedSize(true);
+
+        final NoteAdapter adapter=new NoteAdapter();
+        recyclerView.setAdapter(adapter);
+
         noteViewModel = new ViewModelProvider(this, ViewModelProvider
                 .AndroidViewModelFactory
                 .getInstance(this.getApplication()))
@@ -26,7 +35,8 @@ public class MainActivity extends AppCompatActivity {
              @Override
              public void onChanged(List<Note> notes) {
                  //update Recycler View
-                 Toast.makeText(MainActivity.this,"onChanged",Toast.LENGTH_SHORT).show();
+                 adapter.setNotes(notes);
+                 //Toast.makeText(MainActivity.this,"onChanged",Toast.LENGTH_SHORT).show();
              }
          });
     }
