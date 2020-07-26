@@ -1,13 +1,18 @@
 package com.example.todolist;
 
 import android.content.Context;
+import android.os.AsyncTask;
 
+import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
-@Database(entities = {Note.class},version = 1,)
+import androidx.sqlite.db.SupportSQLiteDatabase;
+
+@Database(entities = {Note.class},version = 1)
 public abstract class NoteDatabase extends RoomDatabase {
 
+    //Singleton
     private static NoteDatabase instance;
     public abstract NoteDao noteDao();
 
@@ -17,9 +22,34 @@ public abstract class NoteDatabase extends RoomDatabase {
             instance= Room.databaseBuilder(context.getApplicationContext(),
                     NoteDatabase.class,"note_database")
                     .fallbackToDestructiveMigration()
+                    .addCallback(roomCallback)
                     .build();
         }
         return instance;
+    }
+
+    private static RoomDatabase.Callback roomCallback =new RoomDatabase.Callback(){
+        @Override
+        public void onCreate(@NonNull SupportSQLiteDatabase db) {
+            super.onCreate(db);
+            new PopulateAsyncTask(instance).execute();
+        }
+    };
+
+    private static class PopulateAsyncTask extends AsyncTask<Void,Void,Void>{
+        private NoteDao noteDao;
+        private PopulateAsyncTask(NoteDatabase db){
+            noteDao=db.noteDao();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            noteDao.insert(new Note("title1","description1",1));
+            noteDao.insert(new Note("title2","description2",2));
+            noteDao.insert(new Note("title3","description3",3));
+
+            return null;
+        }
     }
 
 }
