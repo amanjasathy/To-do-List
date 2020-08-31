@@ -1,15 +1,20 @@
 package com.example.todolist;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -55,6 +60,25 @@ public class MainActivity extends AppCompatActivity {
                  //Toast.makeText(MainActivity.this,"onChanged",Toast.LENGTH_SHORT).show();
              }
          });
+         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
+                 ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+             @Override
+             public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                 return makeMovementFlags(0,ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
+
+             }
+
+             @Override
+             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                 return false;
+             }
+
+             @Override
+             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                 noteViewModel.delete(adapter.getNoteAt(viewHolder.getAdapterPosition()));
+                    Toast.makeText(MainActivity.this,"NOTE DELETED",Toast.LENGTH_SHORT).show();
+             }
+         }).attachToRecyclerView(recyclerView);
     }
 
     @Override
@@ -74,6 +98,27 @@ public class MainActivity extends AppCompatActivity {
         else {
             //when we not save and move back
             Toast.makeText(this,"NOTE NOT SAVED",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater=getMenuInflater();
+        menuInflater.inflate(R.menu.main_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch(item.getItemId())
+        {
+            case R.id.delete_all_notes:
+                noteViewModel.deleteAllNotes();
+                Toast.makeText(this,"ALL NOTES DELETED",Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
         }
     }
 }
